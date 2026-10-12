@@ -37,10 +37,10 @@ packages:
     dependency: "direct main"
     description:
       name: aud_midi_core
-      sha256: "64f7fbdc03ee1c3454b6d316acb1f0aeb6e84a8956839ccccdc019bc002c9528"
+      sha256: f5f38715e1062134d34d99c43c834539d4c2cbc2ecc1977c7fa2007d79452b5b
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.0"
+    version: "0.1.1"
   aud_midi_standard:
     dependency: "direct main"
     description:
