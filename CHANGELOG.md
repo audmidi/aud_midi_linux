@@ -1,12 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.1.1 - 2026-10-12
 
 ### Added
 
 - Add the constraints of ticket 26
-
-Follow aud_midi_core 0.1.1 with the native tap contract
 
 ## 0.1.0 - 2026-10-07
 
