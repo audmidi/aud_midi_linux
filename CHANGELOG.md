@@ -5,6 +5,9 @@
 ### Changed
 
 - Run the Linux tests on Windows
+- Run the Linux tests on Windows
+
+Tests of clock_gettime and D-Bus run off Windows only
 
 ## 0.1.1 - 2026-10-12
 
