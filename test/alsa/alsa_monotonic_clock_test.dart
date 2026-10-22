@@ -4,6 +4,11 @@
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
 
+// clock_gettime comes from the C library of Linux and macOS; Windows has
+// none (ticket 38).
+@TestOn('!windows')
+library;
+
 import 'dart:io';
 
 import 'package:aud_midi_core/aud_midi_core.dart';

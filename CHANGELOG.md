@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Run the Linux tests on Windows
+
 ## 0.1.1 - 2026-10-12
 
 ### Added
