@@ -4,6 +4,11 @@
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
 
+// The fake bus listens on a Unix socket, and package:dbus reaches no bus
+// on Windows, not even over TCP (ticket 38).
+@TestOn('!windows')
+library;
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
