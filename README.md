@@ -1,10 +1,21 @@
 # aud_midi_linux
 
-The Linux backend of aud_midi in pure Dart: ALSA sequencer (MIDI 1.0 and UMP) through FFI, BLE over BlueZ and Avahi over D-Bus.
+English | [Deutsch](README.de.md)
+
+Linux backend for aud_midi: ALSA sequencer, BlueZ, Avahi. Pure Dart: the
+ALSA sequencer (MIDI 1.0 and UMP) through FFI, BLE over BlueZ and Avahi
+over D-Bus.
 
 Part of the aud_midi family, see [aud_midi](https://github.com/audmidi/aud_midi).
 
-## Goals
+## Motivation
+
+Dart and Flutter apps should reach the MIDI devices of their users on
+Linux through the same API as on every other platform, without native
+code of their own, and with timing that a busy app cannot disturb: input
+keeps the time stamp of the sequencer queue, output is scheduled by the
+sequencer. Other apps should see the app as a MIDI device of its own, as
+virtual ports and as a service on the network. The backend aims for:
 
 - ALSA sequencer ports, virtual ports, hotplug, queues
 - UMP clients on kernel 6.5+
@@ -12,49 +23,13 @@ Part of the aud_midi family, see [aud_midi](https://github.com/audmidi/aud_midi)
 - Avahi advertising
 - BLE peripheral through the BlueZ GATT server
 
-## State
-
-Implemented (plan step 3 and the Linux part of step 7):
-
-- `LinuxMidiBackend` (`MidiBackend`, name `alsa`): ports of all other
-  sequencer clients (inputs and outputs, transport from client and port
-  type, UMP endpoint and function blocks), dynamic virtual ports,
-  announce-port hotplug, real-time queue for scheduled sends and
-  `cancelPending`, receive time stamps on the package clock, UMP mode
-  (`snd_seq_set_client_midi_version`) with MIDI 1.0 fallback, BLE-MIDI
-  peripherals through core's `MidiBleBluetoothBackend`.
-- `MidiBlueZBleTransport` (`MidiBleTransport`): scan, connect, notify and
-  write without response on the BLE-MIDI characteristic over BlueZ.
-- `MidiAvahiServiceAdvertiser` (`MidiServiceAdvertiser`): DNS-SD
-  registration through Avahi with collision renaming.
-
-How it is verified:
-
-- Unit tests on the Dart VM (macOS): 100 % line coverage per file. All
-  logic sits behind small interfaces with fakes; the BlueZ and Avahi code
-  runs over a real D-Bus connection against in-process mock services; a
-  layout test checks the generated structs (`snd_seq_event_t` 28 bytes,
-  `snd_seq_ump_event_t` 32 bytes).
-- Not verified on real Linux in this ticket: the FFI glue
-  (`lib/src/alsa/ffi_*.dart`, coverage-ignored), the reader isolate on a
-  real handle, BlueZ and Avahi daemons. The Linux tests below cover the
-  FFI glue; they are skipped on other systems.
-
-### Run the Linux tests
+## Installation
 
 ```bash
-sudo apt-get install libasound2
-sudo modprobe snd-seq
-dart test test/alsa/ffi_alsa_sequencer_test.dart \
-  test/alsa/ffi_alsa_reader_test.dart test/alsa/ffi_alsa_system_test.dart
+dart pub add aud_midi_linux
 ```
 
-They loop the backend's own virtual source into its own virtual
-destination (bytes, order, time stamps, scheduling deviation, cancel,
-SysEx, UMP when available) and watch hotplug of a helper client; no
-hardware is needed.
-
-### Permissions and packaging
+Permissions and packaging:
 
 - `libasound2` at runtime, `/dev/snd/seq` (kernel module `snd-seq`), on
   some distributions the user in the group `audio`.
@@ -64,30 +39,28 @@ hardware is needed.
 - Flatpak: `--device=all`, `--system-talk-name=org.bluez`,
   `--system-talk-name=org.freedesktop.Avahi`.
 
-## Installation
+## Usage
 
-```bash
-dart pub add aud_midi_linux
-```
-
-## Documentation
-
-- The plan: [aud_midi_pm](https://github.com/audmidi/aud_midi_pm/blob/main/doc/2026-Q4/tickets/2026-10-06-aud_midi_01-initial-midi-implementation.md)
-- The guides: [doc/guides](doc/guides)
-
-## Code Examples
+`LinuxMidiBackend` (name `alsa`) implements `MidiBackend` of
+[aud_midi_core](https://github.com/audmidi/aud_midi_core); a `MidiEngine`
+over it lists the ports of the other sequencer clients and schedules a
+note on a virtual output:
 
 ```dart
 import 'package:aud_midi_core/aud_midi_core.dart';
 import 'package:aud_midi_linux/aud_midi_linux.dart';
 import 'package:aud_midi_standard/aud_midi_standard.dart';
 
+// Runs on Linux with the ALSA sequencer (libasound.so.2).
 Future<void> main() async {
+  // List the ports of the other sequencer clients
   final engine = MidiEngine(backend: LinuxMidiBackend(clientName: 'My App'));
   await engine.open();
   for (final port in engine.ports) {
     print('${port.direction.name}: ${port.name} (${port.id})');
   }
+
+  // Create a virtual output and schedule a note on it in 100 ms
   final out = await engine.createVirtualPort(
     MidiVirtualPortSpec(name: 'My App Out', direction: MidiDirection.output),
   );
@@ -101,7 +74,25 @@ Future<void> main() async {
 }
 ```
 
-## How It Works
+The snippet runs on Linux only; it is
+[example/aud_midi_linux_example.dart](example/aud_midi_linux_example.dart).
+
+## Limitations
+
+- Without alsa-lib 1.2.10+ and kernel 6.5+ there is no UMP: ports exchange
+  MIDI 1.0 bytes, converted like alsa-lib's `snd_midi_event`, SysEx in
+  chunks of 256 bytes.
+- Not verified on real Linux in this ticket: the FFI glue
+  (`lib/src/alsa/ffi_*.dart`, coverage-ignored), the reader isolate on a
+  real handle, BlueZ and Avahi daemons. The Linux tests under Contributing
+  cover the FFI glue; they are skipped on other systems.
+
+## Documentation
+
+- [The plan of the aud_midi family](https://github.com/audmidi/aud_midi_pm/blob/main/doc/2026-Q4/tickets/2026-10-06-aud_midi_01-initial-midi-implementation.md)
+- [Guides](doc/guides/)
+
+## How it works
 
 - Two sequencer clients: the output client (the app's name) sends
   directly addressed events, owns the virtual sources and the queue; the
@@ -121,6 +112,54 @@ Future<void> main() async {
 - Port ids are `alsa:<client>:<port>:in|out`; a reused client number gets
   a generation suffix (`alsa:20#1:0:in`).
 
+The parts:
+
+- `LinuxMidiBackend` (`MidiBackend`, name `alsa`): ports of all other
+  sequencer clients (inputs and outputs, transport from client and port
+  type, UMP endpoint and function blocks), dynamic virtual ports,
+  announce-port hotplug, real-time queue for scheduled sends and
+  `cancelPending`, receive time stamps on the package clock, UMP mode
+  (`snd_seq_set_client_midi_version`) with MIDI 1.0 fallback, BLE-MIDI
+  peripherals through core's `MidiBleBluetoothBackend`.
+- `MidiBlueZBleTransport` (`MidiBleTransport`): scan, connect, notify and
+  write without response on the BLE-MIDI characteristic over BlueZ.
+- `MidiAvahiServiceAdvertiser` (`MidiServiceAdvertiser`): DNS-SD
+  registration through Avahi with collision renaming.
+
+## Status
+
+Before 1.0 — the API may change between minor versions.
+
+Implemented: plan step 3 and the Linux part of step 7.
+
+How it is verified:
+
+- Unit tests on the Dart VM (macOS): 100 % line coverage per file. All
+  logic sits behind small interfaces with fakes; the BlueZ and Avahi code
+  runs over a real D-Bus connection against in-process mock services; a
+  layout test checks the generated structs (`snd_seq_event_t` 28 bytes,
+  `snd_seq_ump_event_t` 32 bytes).
+- Not verified on real Linux in this ticket: the FFI glue, the reader
+  isolate on a real handle, BlueZ and Avahi daemons (see Limitations).
+
+## Contributing
+
+See [doc/guides/develop-guide.md](doc/guides/develop-guide.md).
+
+### Run the Linux tests
+
+```bash
+sudo apt-get install libasound2
+sudo modprobe snd-seq
+dart test test/alsa/ffi_alsa_sequencer_test.dart \
+  test/alsa/ffi_alsa_reader_test.dart test/alsa/ffi_alsa_system_test.dart
+```
+
+They loop the backend's own virtual source into its own virtual
+destination (bytes, order, time stamps, scheduling deviation, cancel,
+SysEx, UMP when available) and watch hotplug of a helper client; no
+hardware is needed.
+
 ### Regenerate the ALSA bindings
 
 `lib/src/alsa/alsa_bindings.g.dart` is generated by ffigen from the
@@ -136,6 +175,6 @@ dart run tool/alsa_bindings/generate.dart --alsa-lib ../alsa-lib
 It needs libclang (Xcode on macOS, `libclang-dev` on Linux). Functions
 newer than alsa-lib 1.2.10 are looked up at run time.
 
-## Contributing
+## License
 
-See [doc/guides/develop-guide.md](doc/guides/develop-guide.md).
+MIT — see [LICENSE](LICENSE).

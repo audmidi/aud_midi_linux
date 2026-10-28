@@ -144,10 +144,8 @@ void main() {
 
     group('scheduled(queue, microseconds)', () {
       test('sets an absolute real time on the queue', () {
-        final event = AlsaEvent.sysEx([
-          0xF0,
-          0xF7,
-        ]).scheduled(queue: 2, microseconds: 3000004);
+        final event = AlsaEvent.sysEx([0xF0, 0xF7])
+            .scheduled(queue: 2, microseconds: 3000004);
         expect([
           event.queue,
           event.hasRealTime,

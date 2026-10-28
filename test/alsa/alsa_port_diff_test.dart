@@ -29,9 +29,8 @@ void main() {
           AlsaPortDiff.events(before: before, after: after),
           equals([
             MidiPortRemoved(
-              port: port(
-                'alsa:20:0:in',
-              ).copyWith(state: MidiPortState.disconnected),
+              port: port('alsa:20:0:in')
+                  .copyWith(state: MidiPortState.disconnected),
             ),
             MidiPortChanged(
               port: port('alsa:24:0:in', name: 'Renamed'),

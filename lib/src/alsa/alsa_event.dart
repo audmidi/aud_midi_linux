@@ -66,9 +66,8 @@ final class AlsaEvent {
     final cell = Uint8List(AlsaEventLayout.legacySize);
     cell[AlsaEventLayout.type] = snd_seq_event_type.SND_SEQ_EVENT_SYSEX;
     cell[AlsaEventLayout.flags] = SND_SEQ_EVENT_LENGTH_VARIABLE;
-    ByteData.sublistView(
-      cell,
-    ).setUint32(AlsaEventLayout.extLength, bytes.length, Endian.host);
+    ByteData.sublistView(cell)
+        .setUint32(AlsaEventLayout.extLength, bytes.length, Endian.host);
     return AlsaEvent(cell: cell, ext: bytes);
   }
 
