@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.2.0 - 2026-10-28
+
+### Changed
+
+- Require Dart 3.13 and upgrade the dependencies
+
+- Require Dart 3.13
+
+- Upgrade dna_audanika to ^0.1.0
+
+- Upgrade helix to ^1.14.0
+
+- Add the quick check pipeline name to dna/_vars.json
+
+- Reformat 4 files with the Dart 3.13 formatter
+
+- Add the blog post of this change, in English and German
+
+- Bring the README to the README template, in English and German
+
+- Upgrade aud_midi_standard to 0.2.0
+
+- Lift the lock file to the newest resolvable versions
+
 ## 0.1.2 - 2026-10-24
 
 ### Added

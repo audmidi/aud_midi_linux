@@ -569,9 +569,9 @@ void main() {
           ],
           [
             [
-              AlsaReaderLoop.wakeUp(
-                token: system.reader!.token,
-              ).routed(sourcePort: 0, destClient: 129, destPort: 0).direct(),
+              AlsaReaderLoop.wakeUp(token: system.reader!.token)
+                  .routed(sourcePort: 0, destClient: 129, destPort: 0)
+                  .direct(),
             ],
             [3],
             true,
@@ -771,10 +771,9 @@ void main() {
           MidiUmpPacket(words: [0x40903C00, 0xC8000000], time: now),
         );
         expect(output().events, [
-          AlsaEvent.ump([
-            0x40903C00,
-            0xC8000000,
-          ]).routed(sourcePort: 0, destClient: 130, destPort: 0).direct(),
+          AlsaEvent.ump([0x40903C00, 0xC8000000])
+              .routed(sourcePort: 0, destClient: 130, destPort: 0)
+              .direct(),
         ]);
       });
 
