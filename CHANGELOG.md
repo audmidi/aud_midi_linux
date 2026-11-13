@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Upgrade the dependencies
+
 ## 0.2.0 - 2026-10-28
 
 ### Changed
@@ -23,6 +29,7 @@
 - Upgrade aud_midi_standard to 0.2.0
 
 - Lift the lock file to the newest resolvable versions
+
 
 ## 0.1.2 - 2026-10-24
 
